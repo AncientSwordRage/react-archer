@@ -71,8 +71,8 @@ function computeCoordinatesFromAnchorPosition(
 export type ArcherContainerContextType = {
   registerChild?: (string, HTMLElement) => void,
   registerTransitions?: (string, Array<SourceToTargetType>) => void,
-  unregisterChild?: string => void,
-  unregisterTransitions?: string => void,
+    unregisterChild ?: string => void,
+    unregisterTransitions ?: string => void,
 };
 
 const ArcherContainerContext = React.createContext<ArcherContainerContextType>({});
@@ -328,29 +328,34 @@ export class ArcherContainer extends React.Component<Props, State> {
     ...this.props.svgContainerStyle,
   });
 
+  withContainerContext = (children: React$Node) => {
+    return (<ArcherContainerContextProvider
+      value={{
+        registerTransitions: this._registerTransitions,
+        unregisterTransitions: this._unregisterTransitions,
+        registerChild: this._registerChild,
+        unregisterChild: this._unregisterChild,
+      }}
+    >
+      {children}
+    </ArcherContainerContextProvider>
+    );
+  }
+
   render() {
     const SvgArrows = this._computeArrows();
 
-    return (
-      <ArcherContainerContextProvider
-        value={{
-          registerTransitions: this._registerTransitions,
-          unregisterTransitions: this._unregisterTransitions,
-          registerChild: this._registerChild,
-          unregisterChild: this._unregisterChild,
-        }}
-      >
-        <div style={{ ...this.props.style, position: 'relative' }} className={this.props.className}>
-          <svg style={this._svgContainerStyle()}>
-            <defs>{this._generateAllArrowMarkers()}</defs>
-            {SvgArrows}
-          </svg>
+    return this.withContainerContext(
+      <div style={{ ...this.props.style, position: 'relative' }} className={this.props.className}>
+        <svg style={this._svgContainerStyle()}>
+          <defs>{this._generateAllArrowMarkers()}</defs>
+          {SvgArrows}
+        </svg>
 
-          <div style={{ height: '100%' }} ref={this._storeParent}>
-            {this.props.children}
-          </div>
+        <div style={{ height: '100%' }} ref={this._storeParent}>
+          {this.props.children}
         </div>
-      </ArcherContainerContextProvider>
+      </div>
     );
   }
 }
